@@ -9,19 +9,19 @@ usuarios.route("/")
     res.status(200).json(db)
 })
 .post((req, res) => {
-    const {matricula, nome, media} = req.body
+    const { matricula, nome, media } = req.body
 
-    if(!matricula || !nome || !media) {
-        return res.status(400).json({mensagem: "Preencha os campos obrigatórios"});
+    if (!matricula || !nome || !media) {
+        return res.status(400).json({ mensagem: "Preencha os campos obrigatórios" });
 
     }
     //retorna o banco de dados
-    const db =lerBancoDados();
+    const db = lerBancoDados();
 
     const alunoEncontrado = db.find(aluno => aluno.matricula === matricula)
 
-    if(alunoEncontrado) {
-        res.status(400).json({mensagem:"O aluno já existe"})
+    if (alunoEncontrado) {
+        return res.status(400).json({ mensagem: "O aluno já existe" })
     }
 
     const novoAluno = {
@@ -34,18 +34,39 @@ usuarios.route("/")
 
     gravarBancoDados(db);
 
-    res.json({mensagem: "Aluno criado com sucesso!"})
+    res.status(200).json({ mensagem: "Aluno criado com sucesso!" })
 
 
 })
 .put((req, res) => {
-    res.json({mensagem: "put realizado com sucesso!"})
+    res.json({ mensagem: "put realizado com sucesso!" })
 })
 .delete((req, res) => {
-    res.json({mensagem: "delete realizado com sucesso!"})
+    const { matricula, nome, media } = req.body;
+
+    if (!matricula || !nome || !media) {
+        return res.status(400).json({ mensagem: "Preencha os campos obrigatórios" });
+    }
+
+    const db = lerBancoDados();
+
+    const alunoEncontrado = db.find(aluno => aluno.matricula === matricula);
+
+
+    if (!alunoEncontrado) {
+        return res.status(404).json({ mensagem: "Aluno inexitente." });
+    }
+
+    //remove o aluno do array do banco de dados
+    const dbModificado = db.filter(aluno => aluno.matricula !== matricula);
+
+    //gera o array modficado no banco de dados
+    gravarBancoDados(dbModificado);
+
+    res.status(200).json({ mensagem: "Aluno deletado com sucesso." })
 });
 
-function lerBancoDados(){ // função que retorna o banco de dados
+function lerBancoDados() { // função que retorna o banco de dados
     const arquivo = fs.readFileSync("./db/db.json"); //leitura do arquivo
     const db = JSON.parse(arquivo); //converte para objeto
     return db;
